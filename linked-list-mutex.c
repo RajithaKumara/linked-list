@@ -76,34 +76,47 @@ void *StartRoutine()
 
 int main(int argc, char *argv[])
 {
-    printf("Enter values for n, m, thread_count, m_member_fraction, m_insert_fraction, m_delete_fraction \n(Use `Enter` or `Space` to seperate values\n:");
-    scanf("%d %d %d %f %f %f", &n, &m, &thread_count, &m_member_fraction, &m_insert_fraction, &m_delete_fraction);
-
-    if (n <= 0)
+    if (argc == 7)
     {
-        printf("Invalid `n` value\n");
-        exit(0);
+        n = (int)strtol(argv[1], (char **)NULL, 10);
+        m = (int)strtol(argv[2], (char **)NULL, 10);
+        thread_count = (int)strtol(argv[3], (char **)NULL, 10);
+
+        m_member_fraction = (float)atof(argv[4]);
+        m_insert_fraction = (float)atof(argv[5]);
+        m_delete_fraction = (float)atof(argv[6]);
+    }
+    else
+    {
+        printf("Enter values for n, m, thread_count, m_member_fraction, m_insert_fraction, m_delete_fraction \n(Use `Enter` or `Space` to seperate values\n:");
+        scanf("%d %d %d %f %f %f", &n, &m, &thread_count, &m_member_fraction, &m_insert_fraction, &m_delete_fraction);
+
+        if (n <= 0)
+        {
+            printf("Invalid `n` value\n");
+            exit(0);
+        }
+
+        if (m <= 0)
+        {
+            printf("Invalid `m` value\n");
+            exit(0);
+        }
+
+        if (thread_count <= 0 && thread_count > 8)
+        {
+            printf("Invalid thread count value. (0<thread_count<=8)\n");
+            exit(0);
+        }
+
+        if (m_member_fraction + m_insert_fraction + m_delete_fraction != 1.0)
+        {
+            printf("Invalid fraction values\n");
+            exit(0);
+        }
     }
 
-    if (m <= 0)
-    {
-        printf("Invalid `m` value\n");
-        exit(0);
-    }
-
-    if (thread_count <= 0 && thread_count > 8)
-    {
-        printf("Invalid thread count value. (0<thread_count<=8)\n");
-        exit(0);
-    }
-
-    if (m_member_fraction + m_insert_fraction + m_delete_fraction != 1.0)
-    {
-        printf("Invalid fraction values\n");
-        exit(0);
-    }
-
-    printf("\nn= %d\nm= %d\nthread_count= %d\nm_member= %f\nm_insert= %f\nm_delete= %f\n", n, m, thread_count, m_member_fraction, m_insert_fraction, m_delete_fraction);
+    // printf("\nn= %d\nm= %d\nthread_count= %d\nm_member= %f\nm_insert= %f\nm_delete= %f\n", n, m, thread_count, m_member_fraction, m_insert_fraction, m_delete_fraction);
 
     m_member = round(m_member_fraction * m);
     m_insert = round(m_insert_fraction * m);
@@ -115,9 +128,9 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    printf("\nMember() function will execute: %d times\n", m_member);
-    printf("Insert() function will execute: %d times\n", m_insert);
-    printf("Delete() function will execute: %d times\n", m_delete);
+    // printf("\nMember() function will execute: %d times\n", m_member);
+    // printf("Insert() function will execute: %d times\n", m_insert);
+    // printf("Delete() function will execute: %d times\n", m_delete);
 
     struct timeval time_begin, time_end;
 
@@ -149,11 +162,8 @@ int main(int argc, char *argv[])
     gettimeofday(&time_end, NULL);
 
     double time_diff = (double)(time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double)(time_end.tv_sec - time_begin.tv_sec);
-    printf("\nTime Spent : %.6f secs\n", time_diff);
-    printf("\ncount_member_total= %d\n", count_member);
-    printf("count_insert_total= %d\n", count_insert);
-    printf("count_delete_total= %d\n", count_delete);
-    LogLinkedList(&head);
+    printf("%.6f\n", time_diff);
+    // LogLinkedList(&head);
 
     return 0;
 }

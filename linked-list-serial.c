@@ -10,28 +10,39 @@ int main(int argc, char *argv[])
     int n, m, m_member, m_insert, m_delete;
     float m_member_fraction, m_insert_fraction, m_delete_fraction;
 
-    printf("Enter values for n, m, m_member_fraction, m_insert_fraction, m_delete_fraction \n(Use `Enter` or `Space` to seperate values\n:");
-    scanf("%d %d %f %f %f", &n, &m, &m_member_fraction, &m_insert_fraction, &m_delete_fraction);
-
-    if (n <= 0)
+    if (argc == 6)
     {
-        printf("Invalid `n` value\n");
-        exit(0);
+        n = (int)strtol(argv[1], (char **)NULL, 10);
+        m = (int)strtol(argv[2], (char **)NULL, 10);
+        m_member_fraction = (float)atof(argv[3]);
+        m_insert_fraction = (float)atof(argv[4]);
+        m_delete_fraction = (float)atof(argv[5]);
+    }
+    else
+    {
+        printf("Enter values for n, m, m_member_fraction, m_insert_fraction, m_delete_fraction \n(Use `Enter` or `Space` to seperate values\n:");
+        scanf("%d %d %f %f %f", &n, &m, &m_member_fraction, &m_insert_fraction, &m_delete_fraction);
+
+        if (n <= 0)
+        {
+            printf("Invalid `n` value\n");
+            exit(0);
+        }
+
+        if (m <= 0)
+        {
+            printf("Invalid `m` value\n");
+            exit(0);
+        }
+
+        if (m_member_fraction + m_insert_fraction + m_delete_fraction != 1.0)
+        {
+            printf("Invalid fraction values\n");
+            exit(0);
+        }
     }
 
-    if (m <= 0)
-    {
-        printf("Invalid `m` value\n");
-        exit(0);
-    }
-
-    if (m_member_fraction + m_insert_fraction + m_delete_fraction != 1.0)
-    {
-        printf("Invalid fraction values\n");
-        exit(0);
-    }
-
-    printf("\nn= %d\nm= %d\nm_member= %f\nm_insert= %f\nm_delete= %f\n", n, m, m_member_fraction, m_insert_fraction, m_delete_fraction);
+    // printf("\nn= %d\nm= %d\nm_member= %f\nm_insert= %f\nm_delete= %f\n", n, m, m_member_fraction, m_insert_fraction, m_delete_fraction);
 
     m_member = round(m_member_fraction * m);
     m_insert = round(m_insert_fraction * m);
@@ -43,9 +54,9 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    printf("\nMember() function will execute: %d times\n", m_member);
-    printf("Insert() function will execute: %d times\n", m_insert);
-    printf("Delete() function will execute: %d times\n", m_delete);
+    // printf("\nMember() function will execute: %d times\n", m_member);
+    // printf("Insert() function will execute: %d times\n", m_insert);
+    // printf("Delete() function will execute: %d times\n", m_delete);
 
     int rand_upper = pow(2, 16) - 1;
     struct list_node_s *head = NULL;
@@ -95,8 +106,8 @@ int main(int argc, char *argv[])
     gettimeofday(&time_end, NULL);
 
     double time_diff = (double)(time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double)(time_end.tv_sec - time_begin.tv_sec);
-    printf("\nTime Spent : %.6f secs\n", time_diff);
-    LogLinkedList(&head);
+    printf("%.6f\n", time_diff);
+    // LogLinkedList(&head);
 
     return 0;
 }
