@@ -1,0 +1,30 @@
+diff --git a/linked-list-serial.c b/linked-list-serial.c
+index 82552fc..1e3d472 100755
+--- a/linked-list-serial.c
++++ b/linked-list-serial.c
+@@ -86,6 +86,10 @@ int main(int argc, char *argv[])
+ 
+     double time_diff = (double)(time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double)(time_end.tv_sec - time_begin.tv_sec);
+     printf("\nTime Spent : %.6f secs\n", time_diff);
++
++    printf("\ncount_member_total= %d\n", count_member);
++    printf("count_insert_total= %d\n", count_insert);
++    printf("count_delete_total= %d\n", count_delete);
+     LogLinkedList(&head);
+ 
+     return 0;
+diff --git a/run-serial.sh b/run-serial.sh
+index aec6641..12d1bae 100755
+--- a/run-serial.sh
++++ b/run-serial.sh
+@@ -2,7 +2,7 @@
+ 
+ cd build
+ rm -rf ./*
+-gcc -g -w -c ../linked-list-serial.c
+-gcc -g -w -c ../linked-list.c
+-gcc -g -w -o linked-list-serial linked-list-serial.o linked-list.o
++gcc -g -Wall -c ../linked-list-serial.c
++gcc -g -Wall -c ../linked-list.c
++gcc -g -Wall -o linked-list-serial linked-list-serial.o linked-list.o
+ cd ../ && ./build/linked-list-serial

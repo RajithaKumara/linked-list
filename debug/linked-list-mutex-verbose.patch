@@ -1,0 +1,92 @@
+diff --git a/linked-list-mutex.c b/linked-list-mutex.c
+index cf48216..a033f0c 100755
+--- a/linked-list-mutex.c
++++ b/linked-list-mutex.c
+@@ -16,12 +16,17 @@ int count_member = 0;
+ int count_insert = 0;
+ int count_delete = 0;
+ 
+-void *StartRoutine()
++void *StartRoutine(void *id)
+ {
++    const int thread_id = (int)id;
+     int finished_member = 0;
+     int finished_insert = 0;
+     int finished_delete = 0;
+ 
++    int local_count_member = 0;
++    int local_count_insert = 0;
++    int local_count_delete = 0;
++
+     while (count_insert + count_member + count_delete < m)
+     {
+         int random_value = rand() % rand_upper;
+@@ -34,6 +39,7 @@ void *StartRoutine()
+             {
+                 Member(random_value, head);
+                 count_member++;
++                local_count_member++;
+             }
+             else
+             {
+@@ -49,6 +55,7 @@ void *StartRoutine()
+             {
+                 Insert(random_value, &head);
+                 count_insert++;
++                local_count_insert++;
+             }
+             else
+             {
+@@ -64,6 +71,7 @@ void *StartRoutine()
+             {
+                 Delete(random_value, &head);
+                 count_delete++;
++                local_count_delete++;
+             }
+             else
+             {
+@@ -72,6 +80,9 @@ void *StartRoutine()
+             pthread_mutex_unlock(&mutex);
+         }
+     }
++    printf("\ncount_member(%d)= %d\n", thread_id, local_count_member);
++    printf("count_insert(%d)= %d\n", thread_id, local_count_insert);
++    printf("count_delete(%d)= %d\n", thread_id, local_count_delete);
+     return NULL;
+ }
+ 
+@@ -130,7 +141,7 @@ int main(int argc, char *argv[])
+     gettimeofday(&time_begin, NULL);
+     for (thread = 0; thread < thread_count; thread++)
+     {
+-        pthread_create(&thread_handlers[thread], NULL, &StartRoutine, NULL);
++        pthread_create(&thread_handlers[thread], NULL, &StartRoutine, (void *)(int)thread);
+     }
+ 
+     for (thread = 0; thread < thread_count; thread++)
+@@ -141,6 +152,10 @@ int main(int argc, char *argv[])
+ 
+     double time_diff = (double)(time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double)(time_end.tv_sec - time_begin.tv_sec);
+     printf("\nTime Spent : %.6f secs\n", time_diff);
++
++    printf("\ncount_member_total= %d\n", count_member);
++    printf("count_insert_total= %d\n", count_insert);
++    printf("count_delete_total= %d\n", count_delete);
+     LogLinkedList(&head);
+ 
+     return 0;
+diff --git a/run-mutex.sh b/run-mutex.sh
+index 65f1b79..a7980bf 100755
+--- a/run-mutex.sh
++++ b/run-mutex.sh
+@@ -2,7 +2,7 @@
+ 
+ cd build
+ rm -rf ./*
+-gcc -g -w -c ../linked-list-mutex.c
+-gcc -g -w -c ../linked-list.c
+-gcc -g -w -o linked-list-mutex linked-list-mutex.o linked-list.o -lpthread -lm
++gcc -g -Wall -c ../linked-list-mutex.c
++gcc -g -Wall -c ../linked-list.c
++gcc -g -Wall -o linked-list-mutex linked-list-mutex.o linked-list.o -lpthread -lm
+ cd ../ && ./build/linked-list-mutex

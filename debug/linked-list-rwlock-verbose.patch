@@ -1,0 +1,92 @@
+diff --git a/linked-list-rwlock.c b/linked-list-rwlock.c
+index 47bc928..f2d4a48 100755
+--- a/linked-list-rwlock.c
++++ b/linked-list-rwlock.c
+@@ -20,12 +20,17 @@ int count_member = 0;
+ int count_insert = 0;
+ int count_delete = 0;
+ 
+-void *StartRoutine()
++void *StartRoutine(void *id)
+ {
++    const int thread_id = (int)id;
+     int finished_member = 0;
+     int finished_insert = 0;
+     int finished_delete = 0;
+ 
++    int local_count_member = 0;
++    int local_count_insert = 0;
++    int local_count_delete = 0;
++
+     while (finished_member == 0 || finished_insert == 0 || finished_delete == 0)
+     {
+         int random_value = rand() % rand_upper;
+@@ -37,6 +42,7 @@ void *StartRoutine()
+             if (count_member < mMember)
+             {
+                 count_member++;
++                local_count_member++;
+                 pthread_rwlock_unlock(&rwlock_count_member);
+                 pthread_rwlock_rdlock(&rwlock_linked_list);
+                 Member(random_value, head);
+@@ -55,6 +61,7 @@ void *StartRoutine()
+             if (count_insert < mInsert)
+             {
+                 count_insert++;
++                local_count_insert++;
+                 pthread_rwlock_unlock(&rwlock_count_insert);
+                 pthread_rwlock_wrlock(&rwlock_linked_list);
+                 Insert(random_value, &head);
+@@ -73,6 +80,7 @@ void *StartRoutine()
+             if (count_delete < mDelete)
+             {
+                 count_delete++;
++                local_count_delete++;
+                 pthread_rwlock_unlock(&rwlock_count_delete);
+                 pthread_rwlock_wrlock(&rwlock_linked_list);
+                 Delete(random_value, &head);
+@@ -85,6 +93,9 @@ void *StartRoutine()
+             }
+         }
+     }
++    printf("\ncount_member(%d)= %d\n", thread_id, local_count_member);
++    printf("count_insert(%d)= %d\n", thread_id, local_count_insert);
++    printf("count_delete(%d)= %d\n", thread_id, local_count_delete);
+     return NULL;
+ }
+ 
+@@ -148,7 +159,7 @@ int main(int argc, char *argv[])
+     gettimeofday(&time_begin, NULL);
+     for (thread = 0; thread < thread_count; thread++)
+     {
+-        pthread_create(&thread_handlers[thread], NULL, &StartRoutine, NULL);
++        pthread_create(&thread_handlers[thread], NULL, &StartRoutine, (void *)(int)thread);
+     }
+ 
+     for (thread = 0; thread < thread_count; thread++)
+@@ -163,6 +174,10 @@ int main(int argc, char *argv[])
+ 
+     double time_diff = (double)(time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double)(time_end.tv_sec - time_begin.tv_sec);
+     printf("\nTime Spent : %.6f secs\n", time_diff);
++
++    printf("\ncount_member_total= %d\n", count_member);
++    printf("count_insert_total= %d\n", count_insert);
++    printf("count_delete_total= %d\n", count_delete);
+     LogLinkedList(&head);
+ 
+     return 0;
+diff --git a/run-rwlock.sh b/run-rwlock.sh
+index cee8aca..7cefd77 100755
+--- a/run-rwlock.sh
++++ b/run-rwlock.sh
+@@ -2,7 +2,7 @@
+ 
+ cd build
+ rm -rf ./*
+-gcc -g -w -c ../linked-list-rwlock.c
+-gcc -g -w -c ../linked-list.c
+-gcc -g -w -o linked-list-rwlock linked-list-rwlock.o linked-list.o -lpthread -lm
++gcc -g -Wall -c ../linked-list-rwlock.c
++gcc -g -Wall -c ../linked-list.c
++gcc -g -Wall -o linked-list-rwlock linked-list-rwlock.o linked-list.o -lpthread -lm
+ cd ../ && ./build/linked-list-rwlock
