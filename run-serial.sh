@@ -1,5 +1,8 @@
 #!/bin/bash
 
-rm -f ./build/linked-list-serial
-gcc -g -Wall -o build/linked-list-serial linked-list-serial.c
-./build/linked-list-serial
+cd build
+rm -rf ./*
+gcc -g -w -c ../linked-list-serial.c
+gcc -g -w -c ../linked-list.c
+gcc -g -w -o linked-list-serial linked-list-serial.o linked-list.o
+cd ../ && ./build/linked-list-serial
