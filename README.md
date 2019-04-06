@@ -25,3 +25,9 @@ Parallel program with multiple mutex
 ``` bash
 $ ./run-mutex-multi.sh
 ```
+
+#### Run tests
+Test output files are located at `test.out` directory
+``` bash
+$ ./run-test.sh
+```
