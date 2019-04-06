@@ -5,9 +5,8 @@
 #include <pthread.h>
 #include "linked-list.h"
 
-int n, m, thread_count, rand_upper;
-
-float m_member, m_insert, m_delete, mMember, mInsert, mDelete;
+int n, m, thread_count, rand_upper, m_member, m_insert, m_delete;
+float m_member_fraction, m_insert_fraction, m_delete_fraction;
 
 pthread_rwlock_t rwlock_linked_list;
 pthread_rwlock_t rwlock_count_member;
@@ -34,7 +33,7 @@ void *StartRoutine()
         if (random_select == 0 && finished_member == 0)
         {
             pthread_rwlock_wrlock(&rwlock_count_member);
-            if (count_member < mMember)
+            if (count_member < m_member)
             {
                 count_member++;
                 pthread_rwlock_unlock(&rwlock_count_member);
@@ -52,7 +51,7 @@ void *StartRoutine()
         else if (random_select == 1 && finished_insert == 0)
         {
             pthread_rwlock_wrlock(&rwlock_count_insert);
-            if (count_insert < mInsert)
+            if (count_insert < m_insert)
             {
                 count_insert++;
                 pthread_rwlock_unlock(&rwlock_count_insert);
@@ -70,7 +69,7 @@ void *StartRoutine()
         else if (random_select == 2 && finished_delete == 0)
         {
             pthread_rwlock_wrlock(&rwlock_count_delete);
-            if (count_delete < mDelete)
+            if (count_delete < m_delete)
             {
                 count_delete++;
                 pthread_rwlock_unlock(&rwlock_count_delete);
@@ -90,8 +89,8 @@ void *StartRoutine()
 
 int main(int argc, char *argv[])
 {
-    printf("Enter values for n, m, thread_count, m_member, m_insert, m_delete \n(Use `Enter` or `Space` to seperate values\n:");
-    scanf("%d %d %d %f %f %f", &n, &m, &thread_count, &m_member, &m_insert, &m_delete);
+    printf("Enter values for n, m, thread_count, m_member_fraction, m_insert_fraction, m_delete_fraction \n(Use `Enter` or `Space` to seperate values\n:");
+    scanf("%d %d %d %f %f %f", &n, &m, &thread_count, &m_member_fraction, &m_insert_fraction, &m_delete_fraction);
 
     if (n <= 0)
     {
@@ -111,13 +110,27 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    if (m_member + m_insert + m_delete != 1.0)
+    if (m_member_fraction + m_insert_fraction + m_delete_fraction != 1.0)
     {
         printf("Invalid fraction values\n");
         exit(0);
     }
 
-    printf("\nn= %d\nm= %d\nthread_count= %d\nm_member= %f\nm_insert= %f\nm_delete= %f\n", n, m, thread_count, m_member, m_insert, m_delete);
+    printf("\nn= %d\nm= %d\nthread_count= %d\nm_member= %f\nm_insert= %f\nm_delete= %f\n", n, m, thread_count, m_member_fraction, m_insert_fraction, m_delete_fraction);
+
+    m_member = round(m_member_fraction * m);
+    m_insert = round(m_insert_fraction * m);
+    m_delete = round(m_delete_fraction * m);
+
+    if (m_member + m_insert + m_delete != m)
+    {
+        printf("m, m_member, m_insert, m_delete values are mismatch\n");
+        exit(0);
+    }
+
+    printf("\nMember() function will execute: %d times\n", m_member);
+    printf("Insert() function will execute: %d times\n", m_insert);
+    printf("Delete() function will execute: %d times\n", m_delete);
 
     struct timeval time_begin, time_end;
 
@@ -135,10 +148,6 @@ int main(int argc, char *argv[])
             i++;
         }
     }
-
-    mMember = m_member * m;
-    mInsert = m_insert * m;
-    mDelete = m_delete * m;
 
     pthread_rwlock_init(&rwlock_linked_list, NULL);
     pthread_rwlock_init(&rwlock_count_member, NULL);

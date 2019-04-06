@@ -23,7 +23,7 @@ index aec6641..12d1bae 100755
  rm -rf ./*
 -gcc -g -w -c ../linked-list-serial.c
 -gcc -g -w -c ../linked-list.c
--gcc -g -w -o linked-list-serial linked-list-serial.o linked-list.o
+-gcc -g -w -o linked-list-serial linked-list-serial.o linked-list.o -lm
 +gcc -g -Wall -c ../linked-list-serial.c
 +gcc -g -Wall -c ../linked-list.c
 +gcc -g -Wall -o linked-list-serial linked-list-serial.o linked-list.o

@@ -22,7 +22,7 @@ index 47bc928..f2d4a48 100755
      {
          int random_value = rand() % rand_upper;
 @@ -37,6 +42,7 @@ void *StartRoutine()
-             if (count_member < mMember)
+             if (count_member < m_member)
              {
                  count_member++;
 +                local_count_member++;
@@ -30,7 +30,7 @@ index 47bc928..f2d4a48 100755
                  pthread_rwlock_rdlock(&rwlock_linked_list);
                  Member(random_value, head);
 @@ -55,6 +61,7 @@ void *StartRoutine()
-             if (count_insert < mInsert)
+             if (count_insert < m_insert)
              {
                  count_insert++;
 +                local_count_insert++;
@@ -38,7 +38,7 @@ index 47bc928..f2d4a48 100755
                  pthread_rwlock_wrlock(&rwlock_linked_list);
                  Insert(random_value, &head);
 @@ -73,6 +80,7 @@ void *StartRoutine()
-             if (count_delete < mDelete)
+             if (count_delete < m_delete)
              {
                  count_delete++;
 +                local_count_delete++;
