@@ -290,9 +290,6 @@ int main(int argc, char *argv[])
     double time_diff = (double)(time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double)(time_end.tv_sec - time_begin.tv_sec);
     printf("\nTime Spent : %.6f secs\n", time_diff);
 
-    printf("\ncount_member= %d\n", count_member);
-    printf("count_insert= %d\n", count_insert);
-    printf("count_delete= %d\n", count_delete);
     LogLinkedList();
 
     return 0;

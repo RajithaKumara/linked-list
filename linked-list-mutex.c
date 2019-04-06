@@ -10,7 +10,7 @@ struct list_node_s
     struct list_node_s *next;
 };
 
-int n, m, thread_count;
+int n, m, thread_count, rand_upper;
 
 float m_member, m_insert, m_delete, mMember, mInsert, mDelete;
 
@@ -108,8 +108,6 @@ int Delete(int value, struct list_node_s **head_pp)
 
 void *StartRoutine()
 {
-    int rand_upper = pow(2, 16) - 1;
-
     int finished_member = 0;
     int finished_insert = 0;
     int finished_delete = 0;
@@ -136,7 +134,6 @@ void *StartRoutine()
 
         else if (random_select == 1 && finished_insert == 0)
         {
-
             pthread_mutex_lock(&mutex);
             if (count_insert < mInsert)
             {
@@ -152,7 +149,6 @@ void *StartRoutine()
 
         else if (random_select == 2 && finished_delete == 0)
         {
-
             pthread_mutex_lock(&mutex);
             if (count_delete < mDelete)
             {
@@ -242,7 +238,7 @@ int main(int argc, char *argv[])
     pthread_t *thread_handlers;
     thread_handlers = malloc(sizeof(pthread_t) * thread_count);
 
-    int rand_upper = pow(2, 16) - 1;
+    rand_upper = pow(2, 16) - 1;
     int i = 0;
     srand(time(0));
     while (i < n)

@@ -127,6 +127,7 @@ int main(int argc, char *argv[])
     struct timeval time_begin, time_end;
 
     int i = 0;
+    srand(time(0));
     while (i < n)
     {
         if (Insert(rand() % rand_upper, &head) == 1)
