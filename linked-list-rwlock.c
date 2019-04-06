@@ -10,17 +10,22 @@ struct list_node_s
     struct list_node_s *next;
 };
 
-int n, m, thread_count;
+int n, m, thread_count, rand_upper;
 
 float m_member, m_insert, m_delete, mMember, mInsert, mDelete;
 
-pthread_rwlock_t rwlock;
+pthread_rwlock_t rwlock_linked_list;
+pthread_rwlock_t rwlock_count_member;
+pthread_rwlock_t rwlock_count_insert;
+pthread_rwlock_t rwlock_count_delete;
+pthread_rwlock_t rwlock_count_total;
 
 struct list_node_s *head = NULL;
 
 int count_member = 0;
 int count_insert = 0;
 int count_delete = 0;
+int count_total = 0;
 
 int Member(int value, struct list_node_s *head_p)
 {
@@ -108,66 +113,92 @@ int Delete(int value, struct list_node_s **head_pp)
 
 void *StartRoutine()
 {
-    int rand_upper = pow(2, 16) - 1;
-
     int finished_member = 0;
     int finished_insert = 0;
     int finished_delete = 0;
 
-    while (count_insert + count_member + count_delete < m)
+    pthread_rwlock_rdlock(&rwlock_count_total);
+
+    while (count_total < m)
     {
+        pthread_rwlock_unlock(&rwlock_count_total);
+
         int random_value = rand() % rand_upper;
         int random_select = rand() % 3;
 
         if (random_select == 0 && finished_member == 0)
         {
+            pthread_rwlock_wrlock(&rwlock_count_member);
+            pthread_rwlock_wrlock(&rwlock_count_total);
             if (count_member < mMember)
             {
-                pthread_rwlock_rdlock(&rwlock);
-                Member(random_value, head);
-                pthread_rwlock_unlock(&rwlock);
+                count_total++;
+                pthread_rwlock_unlock(&rwlock_count_total);
                 count_member++;
+                pthread_rwlock_unlock(&rwlock_count_member);
+                pthread_rwlock_rdlock(&rwlock_linked_list);
+                Member(random_value, head);
+                pthread_rwlock_unlock(&rwlock_linked_list);
             }
             else
             {
+                pthread_rwlock_unlock(&rwlock_count_total);
+                pthread_rwlock_unlock(&rwlock_count_member);
                 finished_member = 1;
             }
         }
 
         else if (random_select == 1 && finished_insert == 0)
         {
+            pthread_rwlock_wrlock(&rwlock_count_insert);
+            pthread_rwlock_wrlock(&rwlock_count_total);
             if (count_insert < mInsert)
             {
-                pthread_rwlock_wrlock(&rwlock);
-                Insert(random_value, &head);
-                pthread_rwlock_unlock(&rwlock);
+                count_total++;
+                pthread_rwlock_unlock(&rwlock_count_total);
                 count_insert++;
+                pthread_rwlock_unlock(&rwlock_count_insert);
+                pthread_rwlock_wrlock(&rwlock_linked_list);
+                Insert(random_value, &head);
+                pthread_rwlock_unlock(&rwlock_linked_list);
             }
             else
             {
+                pthread_rwlock_unlock(&rwlock_count_total);
+                pthread_rwlock_unlock(&rwlock_count_insert);
                 finished_insert = 1;
             }
         }
 
         else if (random_select == 2 && finished_delete == 0)
         {
+            pthread_rwlock_wrlock(&rwlock_count_delete);
+            pthread_rwlock_wrlock(&rwlock_count_total);
             if (count_delete < mDelete)
             {
-                pthread_rwlock_wrlock(&rwlock);
-                Delete(random_value, &head);
-                pthread_rwlock_unlock(&rwlock);
+                count_total++;
+                pthread_rwlock_unlock(&rwlock_count_total);
                 count_delete++;
+                pthread_rwlock_unlock(&rwlock_count_delete);
+                pthread_rwlock_wrlock(&rwlock_linked_list);
+                Delete(random_value, &head);
+                pthread_rwlock_unlock(&rwlock_linked_list);
             }
             else
             {
+                pthread_rwlock_unlock(&rwlock_count_total);
+                pthread_rwlock_unlock(&rwlock_count_delete);
                 finished_delete = 1;
             }
         }
+
+        pthread_rwlock_rdlock(&rwlock_count_total);
     }
     return NULL;
 }
 
-void LogLinkedList() {
+void LogLinkedList()
+{
     char *filePath[30];
     sprintf(filePath, "logs/linked_list-%ld.log", time(NULL));
     FILE *file = fopen(filePath, "w+");
@@ -178,7 +209,7 @@ void LogLinkedList() {
         while (curr_p != NULL)
         {
             char *str_i = malloc(sizeof(long));
-            sprintf(str_i,"%ld",i);
+            sprintf(str_i, "%ld", i);
 
             int data_length = snprintf(NULL, 0, "%d", curr_p->data);
             char *str_data = malloc(data_length);
@@ -196,7 +227,9 @@ void LogLinkedList() {
         }
         fclose(file);
         printf("Log saved at `%s`\n", filePath);
-    } else {
+    }
+    else
+    {
         printf("Log failed\n");
     }
 }
@@ -237,7 +270,7 @@ int main(int argc, char *argv[])
     pthread_t *thread_handlers;
     thread_handlers = malloc(sizeof(pthread_t) * thread_count);
 
-    int rand_upper = pow(2, 16) - 1;
+    rand_upper = pow(2, 16) - 1;
     int i = 0;
 
     srand(time(0));
@@ -253,7 +286,11 @@ int main(int argc, char *argv[])
     mInsert = m_insert * m;
     mDelete = m_delete * m;
 
-    pthread_rwlock_init(&rwlock, NULL);
+    pthread_rwlock_init(&rwlock_linked_list, NULL);
+    pthread_rwlock_init(&rwlock_count_member, NULL);
+    pthread_rwlock_init(&rwlock_count_insert, NULL);
+    pthread_rwlock_init(&rwlock_count_delete, NULL);
+    pthread_rwlock_init(&rwlock_count_total, NULL);
     int thread;
     gettimeofday(&time_begin, NULL);
     for (thread = 0; thread < thread_count; thread++)
@@ -266,10 +303,19 @@ int main(int argc, char *argv[])
         pthread_join(thread_handlers[thread], NULL);
     }
     gettimeofday(&time_end, NULL);
-    pthread_rwlock_destroy(&rwlock);
+    pthread_rwlock_destroy(&rwlock_linked_list);
+    pthread_rwlock_destroy(&rwlock_count_member);
+    pthread_rwlock_destroy(&rwlock_count_insert);
+    pthread_rwlock_destroy(&rwlock_count_delete);
+    pthread_rwlock_destroy(&rwlock_count_total);
 
     double time_diff = (double)(time_end.tv_usec - time_begin.tv_usec) / 1000000 + (double)(time_end.tv_sec - time_begin.tv_sec);
     printf("\nTime Spent : %.6f secs\n", time_diff);
+
+    printf("\ncount_member= %d\n", count_member);
+    printf("count_insert= %d\n", count_insert);
+    printf("count_delete= %d\n", count_delete);
+    printf("count_total= %d\n", count_total);
     LogLinkedList();
 
     return 0;
